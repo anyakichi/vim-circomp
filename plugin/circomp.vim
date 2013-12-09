@@ -23,6 +23,10 @@ if !exists('g:circomp_no_mappings') || !g:circomp_no_mappings
     endif
 endif
 
+if !exists('g:circomp_insert_first_candidate')
+    let g:circomp_insert_first_candidate = 1
+endif
+
 if !exists('g:circomp_config')
     let g:circomp_config = {
     \	'_': [

@@ -70,7 +70,11 @@ endfunction
 
 function! circomp#after(step)
     if pumvisible()
-	return "\<C-p>\<Down>"
+        if g:circomp_insert_first_candidate
+            return ""
+        else
+            return "\<C-p>\<Down>"
+        endif
     elseif empty(b:circomp_seq)
 	return ""
     else
