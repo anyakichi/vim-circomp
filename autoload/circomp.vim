@@ -16,6 +16,9 @@ function! circomp#key(step)
 	let b:circomp_idx = remove(b:circomp_seq, 0)
 	let entry = complist[b:circomp_idx]
 	if eval(get(entry, 'condition', '1'))
+            if b:circomp_idx < 0
+                let b:circomp_idx += len(complist)
+            endif
 	    return entry['key']
 	endif
     endwhile
@@ -23,31 +26,43 @@ function! circomp#key(step)
     return ''
 endfunction
 
-function! circomp#start()
-    if pumvisible()
-	return circomp#jump(1)
+function! circomp#start(...)
+    let default_idx = a:0 > 0 ? a:1 : 0
+    let step = a:0 > 1 && a:2 < 0 ? -1 : 1
+
+    if !pumvisible()
+        let b:circomp_idx = 0
+
+        if type(default_idx) == type(0)
+            let b:circomp_idx = default_idx
+        elseif type(default_idx) == type("")
+            for i in range(0, len(circomp#list()) - 1)
+                if circomp#list()[i]['key'] == default_idx
+                    let b:circomp_idx = i
+                    break
+                endif
+            endfor
+        endif
+
+        let b:circomp_idx -= step
+        if b:circomp_idx < 0
+            let b:circomp_idx += len(circomp#list())
+        endif
     endif
-
-    let b:circomp_seq = range(0, len(circomp#list()) - 1)
-
-    let key = circomp#key(1)
-    if key == ''
-	return ''
-    endif
-
-    let pre = key == "\<C-x>\<C-v>" ? "\<C-o>:redraw\<CR>" : ""
-    return pre . key . "\<C-r>=circomp#after(1)\<CR>"
+    return circomp#jump(step)
 endfunction
 
 function! circomp#jump(step)
+    if !exists('b:circomp_idx')
+        let b:circomp_idx = len(circomp#list()) - a:step
+    endif
+
     let len = len(circomp#list())
     let index = b:circomp_idx
     if a:step > 0
-	let b:circomp_seq = extend(range(index + 1, len - 1),
-	\			    range(0, index))
+	let b:circomp_seq = range(index - len + 1, index)
     else
-	let b:circomp_seq = extend(range(index - 1, 0, -1),
-	\			    range(len - 1, index, -1))
+        let b:circomp_seq = range(index - 1, index - len, -1)
     endif
 
     let key = circomp#key(a:step)
