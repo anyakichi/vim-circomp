@@ -9,6 +9,19 @@ function! circomp#list()
     return get(g:circomp_config, &filetype, g:circomp_config['_'])
 endfunction
 
+function! circomp#set_index(i)
+    if type(a:i) == type(0)
+        let b:circomp_idx = a:i
+    elseif type(a:i) == type("")
+        for i in range(0, len(circomp#list()) - 1)
+            if circomp#list()[i]['key'] == a:i
+                let b:circomp_idx = i
+                break
+            endif
+        endfor
+    endif
+endfunction
+
 function! circomp#key(step)
     let complist = circomp#list()
 
@@ -31,19 +44,7 @@ function! circomp#start(...)
     let step = a:0 > 1 && a:2 < 0 ? -1 : 1
 
     if !pumvisible()
-        let b:circomp_idx = 0
-
-        if type(default_idx) == type(0)
-            let b:circomp_idx = default_idx
-        elseif type(default_idx) == type("")
-            for i in range(0, len(circomp#list()) - 1)
-                if circomp#list()[i]['key'] == default_idx
-                    let b:circomp_idx = i
-                    break
-                endif
-            endfor
-        endif
-
+        call circomp#set_index(default_idx)
         let b:circomp_idx -= step
         if b:circomp_idx < 0
             let b:circomp_idx += len(circomp#list())
